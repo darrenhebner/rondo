@@ -1,0 +1,41 @@
+{
+  "name": "rondo",
+  "version": "0.0.1",
+  "description": "Simple form library for simple forms",
+  "source": "src/index.tsx",
+  "main": "dist/index.js",
+  "exports": "./dist/index.modern.js",
+  "module": "dist/index.module.js",
+  "unpkg": "dist/index.umd.js",
+  "targets": {
+    "build": {
+      "engines": {
+        "browsers": "supports es6-module"
+      }
+    }
+  },
+  "scripts": {
+    "build": "microbundle --jsx React.createElement",
+    "dev": "parcel serve demo/index.html --dist-dir=demo/build",
+    "demo:build": "parcel build demo/index.html --dist-dir=demo/build --target=build"
+  },
+  "author": "Darren Hebner",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^17.0.4",
+    "@types/react-dom": "^17.0.3",
+    "autoprefixer": "^10.2.5",
+    "microbundle": "^0.13.0",
+    "parcel": "^2.0.0-beta.2",
+    "postcss": "^8.2.13",
+    "tailwindcss": "^2.1.2"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.3.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}

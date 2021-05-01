@@ -1,0 +1,6 @@
+.vercel
+node_modules/
+.parcel-cache/
+dist/
+demo/build/
+demo/.parcel-cache/
