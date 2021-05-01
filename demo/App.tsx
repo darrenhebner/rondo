@@ -6,9 +6,9 @@ const {useCallback} = React;
 export function App() {
   const {Form, errors, pending} = useForm({
     customMessage: {
-      email(validity) {
+      title(validity) {
         if (validity.valueMissing) {
-          return 'Enter an email!';
+          return 'Enter an title';
         }
       },
     },
@@ -27,7 +27,7 @@ export function App() {
       }
 
       const data = await response.json();
-      console.log(data);
+
       return {
         status: 'success',
       };
