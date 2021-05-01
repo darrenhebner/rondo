@@ -36,7 +36,7 @@ export function App() {
 
   return (
     <Form
-      className={`container max-w-sm mx-auto transition-opacity ${
+      className={`container max-w-sm p-4 mx-auto transition-opacity ${
         pending ? 'opacity-50 cursor-wait' : undefined
       }`}
     >
@@ -49,7 +49,9 @@ export function App() {
             name="title"
             aria-invalid={'title' in errors}
             aria-describedby={'title' in errors ? 'titleError' : undefined}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            className={`mt-1 block w-full rounded-md ${
+              'title' in errors ? 'border-red-500' : 'border-gray-300'
+            } shadow-sm`}
           />
           {'title' in errors ? (
             <span id="titleError" className="text-red-500 text-sm">
@@ -58,16 +60,18 @@ export function App() {
           ) : null}
         </label>
 
-        <button
-          type="submit"
-          className="bg-gradient-to-r from-blue-500 to-blue-400 text-white px-4 py-2 rounded"
-        >
-          Submit
-        </button>
+        <div className="my-4">
+          <button
+            type="submit"
+            className="bg-gradient-to-r from-blue-500 to-blue-400 text-white px-4 py-2 rounded"
+          >
+            Submit
+          </button>
 
-        <button type="reset" className="text-gray-500 mx-4">
-          Reset
-        </button>
+          <button type="reset" className="text-gray-500 mx-4">
+            Reset
+          </button>
+        </div>
       </fieldset>
     </Form>
   );

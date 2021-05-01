@@ -4,7 +4,7 @@ A simple library for writing forms in React. Rondo aims to do as little as possi
 
 ## Resources
 
-Since Rondo wraps a lot of the browsers built in behaviour, you're going to encounter some pretty cool form related APIs that are native to the web.
+Rondo uses native web APIs wherever possible. Here are a couple you will run in to when using the library.
 
 - [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) - an object that captures your forms data.
 - [`ValidityState`](https://developer.mozilla.org/en-US/docs/Web/API/ValidityState) - an interface that represents the reasons a field might be invalid.
