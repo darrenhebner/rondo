@@ -96,7 +96,7 @@ function App() {
 
 ### Cancelling inflight form submissions
 
-Rondo makes it easy to avoid overlapping form submissions. All you need to do to take advantage of this is pass the `signal` to your `fetch` call. Rondo uses an `AbortController` under the hook to manage this.
+Rondo makes it easy to avoid overlapping form submissions. All you need to do to take advantage of this is pass the `signal` to your `fetch` call. Rondo uses an `AbortController` under the hood to manage this.
 
 ```tsx
 import {useForm} from 'react-rondo';

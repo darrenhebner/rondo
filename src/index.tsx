@@ -41,74 +41,76 @@ export function useForm({customMessage, onSubmit}: Options) {
   const [errors, setErrors] = useState<Record<string, FieldError>>({});
   const [pending, setPending] = useState(false);
   const controllerRef = useRef<AbortController>(null);
+  const submitRef = useRef(onSubmit);
 
-  const handleSubmit = useCallback(
-    async (event: Event) => {
-      const form = ref.current;
-      if (!form) return;
+  useEffect(() => {
+    submitRef.current = onSubmit;
+  }, [onSubmit]);
 
-      controllerRef.current?.abort();
-      controllerRef.current = new AbortController();
+  const handleSubmit = useCallback(async (event: Event) => {
+    const form = ref.current;
+    if (!form) return;
 
-      const valid = form.checkValidity();
+    controllerRef.current?.abort();
+    controllerRef.current = new AbortController();
 
-      if (!valid) {
-        event.preventDefault();
-        focusInvalidElement(form.elements);
-        return;
-      }
+    const valid = form.checkValidity();
 
-      if (!onSubmit) {
-        return;
-      }
-
+    if (!valid) {
       event.preventDefault();
+      focusInvalidElement(form.elements);
+      return;
+    }
 
-      setPending(true);
-      const result = await onSubmit(
-        new FormData(form),
-        controllerRef.current.signal
-      );
+    if (!submitRef.current) {
+      return;
+    }
 
-      if (result.status === 'failed') {
-        for (const [key, value] of Object.entries(result.errors)) {
-          const element = form.elements.namedItem(key);
+    event.preventDefault();
 
-          if (!element) {
-            throw new Error(
-              `Attempted to apply validaton to element that does not exist: ${key}`
-            );
-          }
+    setPending(true);
+    const result = await submitRef.current(
+      new FormData(form),
+      controllerRef.current.signal
+    );
 
-          if (isFormElement(element)) {
-            element.setCustomValidity(value);
-          }
+    if (result.status === 'failed') {
+      for (const [key, value] of Object.entries(result.errors)) {
+        const element = form.elements.namedItem(key);
+
+        if (!element) {
+          throw new Error(
+            `Attempted to apply validaton to element that does not exist: ${key}`
+          );
         }
 
-        requestAnimationFrame(() => {
-          const valid = form.checkValidity();
-
-          if (!valid) {
-            focusInvalidElement(form.elements);
-          }
-        });
-      } else {
-        for (const [field, value] of Object.entries(result?.updates ?? {})) {
-          const element = form.elements.namedItem(field);
-
-          if (isFormElement(element)) {
-            element.value = value;
-            element.defaultValue = value;
-          }
+        if (isFormElement(element)) {
+          element.setCustomValidity(value);
         }
-
-        setErrors({});
       }
 
-      setPending(false);
-    },
-    [ref, onSubmit]
-  );
+      requestAnimationFrame(() => {
+        const valid = form.checkValidity();
+
+        if (!valid) {
+          focusInvalidElement(form.elements);
+        }
+      });
+    } else {
+      for (const [field, value] of Object.entries(result?.updates ?? {})) {
+        const element = form.elements.namedItem(field);
+
+        if (isFormElement(element)) {
+          element.value = value;
+          element.defaultValue = value;
+        }
+      }
+
+      setErrors({});
+    }
+
+    setPending(false);
+  }, []);
 
   useEffect(() => {
     const form = ref.current;

@@ -12,7 +12,7 @@ export function App() {
         }
       },
     },
-    onSubmit: useCallback(async (formData, signal) => {
+    async onSubmit(formData, signal) {
       const response = await fetch(
         'https://jsonplaceholder.typicode.com/posts',
         {
@@ -31,7 +31,7 @@ export function App() {
       return {
         status: 'success',
       };
-    }, []),
+    },
   });
 
   return (
