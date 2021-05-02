@@ -1,8 +1,6 @@
 import * as React from 'react';
 import {useForm} from '../src';
 
-const {useCallback} = React;
-
 export function App() {
   const {Form, errors, pending} = useForm({
     customMessage: {
@@ -25,8 +23,6 @@ export function App() {
       if (!response.ok) {
         throw new Error('API update failed');
       }
-
-      const data = await response.json();
 
       return {
         status: 'success',
@@ -56,6 +52,25 @@ export function App() {
           {'title' in errors ? (
             <span id="titleError" className="text-red-500 text-sm">
               {errors.title.message}
+            </span>
+          ) : null}
+        </label>
+
+        <label className="block">
+          Email
+          <input
+            required
+            type="email"
+            name="email"
+            aria-invalid={'email' in errors}
+            aria-describedby={'email' in errors ? 'emailError' : undefined}
+            className={`mt-1 block w-full rounded-md ${
+              'email' in errors ? 'border-red-500' : 'border-gray-300'
+            } shadow-sm`}
+          />
+          {'email' in errors ? (
+            <span id="emailError" className="text-red-500 text-sm">
+              {errors.email.message}
             </span>
           ) : null}
         </label>

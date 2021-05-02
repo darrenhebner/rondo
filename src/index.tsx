@@ -37,130 +37,117 @@ function focusInvalidElement(elements: HTMLFormElement['elements']) {
 }
 
 export function useForm({customMessage, onSubmit}: Options) {
-  const ref = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<Record<string, FieldError>>({});
   const [pending, setPending] = useState(false);
   const controllerRef = useRef<AbortController>(null);
   const submitRef = useRef(onSubmit);
+  const customMessageRef = useRef(customMessage);
 
   useEffect(() => {
     submitRef.current = onSubmit;
   }, [onSubmit]);
 
-  const handleSubmit = useCallback(async (event: Event) => {
-    const form = ref.current;
-    if (!form) return;
-
-    controllerRef.current?.abort();
-    controllerRef.current = new AbortController();
-
-    const valid = form.checkValidity();
-
-    if (!valid) {
-      event.preventDefault();
-      focusInvalidElement(form.elements);
-      return;
-    }
-
-    if (!submitRef.current) {
-      return;
-    }
-
-    event.preventDefault();
-
-    setPending(true);
-    const result = await submitRef.current(
-      new FormData(form),
-      controllerRef.current.signal
-    );
-
-    if (result.status === 'failed') {
-      for (const [key, value] of Object.entries(result.errors)) {
-        const element = form.elements.namedItem(key);
-
-        if (!element) {
-          throw new Error(
-            `Attempted to apply validaton to element that does not exist: ${key}`
-          );
-        }
-
-        if (isFormElement(element)) {
-          element.setCustomValidity(value);
-        }
-      }
-
-      requestAnimationFrame(() => {
-        const valid = form.checkValidity();
-
-        if (!valid) {
-          focusInvalidElement(form.elements);
-        }
-      });
-    } else {
-      for (const [field, value] of Object.entries(result?.updates ?? {})) {
-        const element = form.elements.namedItem(field);
-
-        if (isFormElement(element)) {
-          element.value = value;
-          element.defaultValue = value;
-        }
-      }
-
-      setErrors({});
-    }
-
-    setPending(false);
+  useEffect(() => {
+    customMessageRef.current = customMessage;
   }, []);
 
-  useEffect(() => {
-    const form = ref.current;
-    if (!form) return;
+  const handleSubmit = useCallback(
+    async (event: React.SyntheticEvent<HTMLFormElement>) => {
+      const form = event.target as HTMLFormElement;
 
-    function handleInvalid({target: element}: Event) {
-      if (isFormElement(element)) {
-        element.addEventListener(
-          'input',
-          () => {
-            if (element.validity.customError) {
-              element.setCustomValidity('');
-            }
+      controllerRef.current?.abort();
+      controllerRef.current = new AbortController();
 
-            setErrors((prev) => {
-              const next = {...prev};
-              delete next[element.name];
-              return next;
-            });
-          },
-          {once: true}
-        );
+      const valid = form.checkValidity();
 
-        const {name, validity, validationMessage} = element;
-        const message = customMessage[name]?.(validity);
-
-        setErrors((prev) => ({
-          ...prev,
-          [name]: {
-            message: message ?? validationMessage,
-            type: validity,
-          },
-        }));
+      if (!valid) {
+        event.preventDefault();
+        focusInvalidElement(form.elements);
+        return;
       }
-    }
 
-    for (const element of form.elements) {
-      if (isFormElement(element)) {
-        element.addEventListener('invalid', handleInvalid);
+      if (!submitRef.current) {
+        return;
       }
-    }
 
-    return () => {
-      for (const element of form.elements) {
-        if (isFormElement(element)) {
-          element.removeEventListener('invalid', handleInvalid);
+      event.preventDefault();
+
+      setPending(true);
+      const result = await submitRef.current(
+        new FormData(form),
+        controllerRef.current.signal
+      );
+
+      if (result.status === 'failed') {
+        for (const [key, value] of Object.entries(result.errors)) {
+          const element = form.elements.namedItem(key);
+
+          if (!element) {
+            throw new Error(
+              `Attempted to apply validaton to element that does not exist: ${key}`
+            );
+          }
+
+          if (isFormElement(element)) {
+            element.setCustomValidity(value);
+          }
         }
+
+        requestAnimationFrame(() => {
+          const valid = form.checkValidity();
+
+          if (!valid) {
+            focusInvalidElement(form.elements);
+          }
+        });
+      } else {
+        for (const [field, value] of Object.entries(result?.updates ?? {})) {
+          const element = form.elements.namedItem(field);
+
+          if (isFormElement(element)) {
+            element.value = value;
+            element.defaultValue = value;
+          }
+        }
+
+        setErrors({});
       }
-    };
-  }, [ref, customMessage]);
+
+      setPending(false);
+    },
+    []
+  );
+
+  const handleInvalid = useCallback(({target}: React.SyntheticEvent) => {
+    if (isFormElement(target)) {
+      target.addEventListener(
+        'input',
+        () => {
+          if (target.validity.customError) {
+            target.setCustomValidity('');
+          }
+
+          setErrors((prev) => {
+            const next = {...prev};
+            delete next[target.name];
+            return next;
+          });
+        },
+        {once: true}
+      );
+
+      const {name, validity, validationMessage} = target;
+      const message = customMessageRef.current[name]?.(validity);
+
+      setErrors((prev) => ({
+        ...prev,
+        [name]: {
+          message: message ?? validationMessage,
+          type: validity,
+        },
+      }));
+    }
+  }, []);
 
   const handleReset = useCallback(() => {
     setErrors({});
@@ -172,20 +159,17 @@ export function useForm({customMessage, onSubmit}: Options) {
         <form
           {...props}
           noValidate
-          ref={ref}
           onSubmit={handleSubmit}
           onReset={handleReset}
+          onInvalid={handleInvalid}
         />
       );
     };
-  }, [handleSubmit, handleReset]);
+  }, [handleSubmit, handleReset, handleInvalid]);
 
   return {
     Form,
     pending,
     errors,
-    reset() {
-      ref.current?.reset();
-    },
   };
 }
